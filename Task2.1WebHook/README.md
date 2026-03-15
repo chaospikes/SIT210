@@ -14,7 +14,7 @@ Our code begins by including the required libraries for WiFi, ThingSpeak, and th
 
 ### setup()
 
-'setup()' prepares the system for operation by calling a series of setup functions:
+`setup()` prepares the system for operation by calling a series of setup functions:
 
   - setup_serial() starts serial communication at 115200 baud so that messages and readings can be viewed in the Serial Monitor
   - setup_pins() configures the LED pin as an output and ensures it starts in the OFF state
