@@ -59,7 +59,7 @@ The main program loop repeatedly performs the following steps:
 
   - starts the DHT11 sensor
 
-#### check_wifi_connect()
+### check_wifi_connect()
 
   - checks whether the Arduino is already connected to WiFi
   - if connected, the function returns and the program continues
