@@ -4,17 +4,18 @@ For this task, I have utilized an Arduino board with WiFi capability using the W
 
   - a DHT11 sensor connected to D5 to measure temperature and humidity
   - an LDR (light dependent resistor) connected to A0 to measure light level
-  - an LED connected to D12 to indicate successful activity/upload
-  - WiFi credentials and ThingSpeak channel details stored securely in secrets.h
+  - an LED connected to D12 to indicate successful upload
+  - WiFi credentials and ThingSpeak channel details stored in secrets.h
   - the ThingSpeak library to send data to the cloud platform
 
-The objective of this program is to read environmental sensor values from the DHT11 and LDR, then upload the readings to a ThingSpeak channel every 30 seconds. The LED blinks briefly after each cycle to visually indicate that the system is active.
+The objective of this program is to read environmental sensor values from the DHT11 and LDR modules, then upload the readings to my ThingSpeak channel every 30 seconds. The LED blinks briefly after each cycle to visually indicate that the system is active.
 
-Our code begins by including the required libraries for WiFi, ThingSpeak, and the DHT sensor. It then defines the pin numbers, channel credentials, and timing intervals. A Sensor_Readings structure is used to neatly store the current light level, humidity, and temperature values together.
+Our code begins by including the required libraries for WiFi, ThingSpeak, and the DHT sensor. It then defines the pin numbers, channel credentials, and timing intervals. I used a struct (Sensor_Readings) to neatly store the current light level, humidity, and temperature values together.
 
 ### setup()
 
-  - setup() prepares the system for operation by calling a series of setup functions:
+'setup()' prepares the system for operation by calling a series of setup functions:
+
   - setup_serial() starts serial communication at 115200 baud so that messages and readings can be viewed in the Serial Monitor
   - setup_pins() configures the LED pin as an output and ensures it starts in the OFF state
   - setup_wifi_module() checks whether the WiFi module is present and working correctly
