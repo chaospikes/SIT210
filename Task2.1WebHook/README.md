@@ -27,7 +27,7 @@ Our code begins by including the required libraries for WiFi, ThingSpeak, and th
 The main program loop repeatedly performs the following steps:
 
   - `check_wifi_connect()` checks whether the nano is connected to WiFi and reconnects if necessary
-  - creates a `Sensor_Readings` variable called readings to store the latest sensor values
+  - creates a `Sensor_Readings` variable called `readings` to store the latest sensor values
   - `read_sensors(readings)` reads the LDR and DHT11 values and stores them in the structure
   - if the DHT sensor fails to return valid humidity or temperature values, an error message is printed and the system waits for the next update interval
   - `print_readings(readings)` displays the sensor values in the Serial Monitor
