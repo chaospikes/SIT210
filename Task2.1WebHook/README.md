@@ -61,7 +61,7 @@ The main program loop repeatedly performs the following steps:
 
 ### check_wifi_connect()
 
-  - checks whether the Arduino is already connected to WiFi
+  - checks whether the nano is already connected to WiFi
   - if connected, the function returns and the program continues
   - if not connected, it prints the SSID it is trying to connect to
   - repeatedly calls WiFi.begin(ssid, pass) until a connection is established
