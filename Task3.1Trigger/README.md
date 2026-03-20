@@ -16,7 +16,7 @@ Our code begins by including the required libraries for WiFi, I2C communication,
 
 ### setup()
 
-`setup()` prepares the system for operation by calling a series of setup functions:
+Prepares the system for operation by calling a series of setup functions:
 - `setup_serial()` starts serial communication at 115200 baud so that messages and readings can be viewed in the Serial Monitor
 - `setup_pins()` configures the built-in LED as an output and ensures it starts in the OFF state
 - `setup_wifi_module()` checks whether the WiFi module is there and is working correctly
