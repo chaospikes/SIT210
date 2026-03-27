@@ -84,8 +84,8 @@ We follow best practice for interrupt handling by doing no heavy processing insi
 - Reads the current lux value from the BH1750
 - Prints the detected light level to the serial monitor
 - Checks if the lux reading is below the threshold:
-  -- If it is then turns lights on and prints a notification
-  -- If not then the lights stay off and prints a notification 
+  * If it is then turns lights on and prints a notification
+  * If not then the lights stay off and prints a notification 
 
 ### turn_on_lights()
 
