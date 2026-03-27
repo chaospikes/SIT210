@@ -169,7 +169,5 @@ void monitor_sensors()
 
     Serial.print(" | Lux: ");
     Serial.print(lux);
-
-    Serial.println(" lx");
   }
 }
