@@ -107,7 +107,6 @@ void handle_pir_event()
     Serial.print("Motion detected. Current light level: ");
     Serial.print(lux);
     Serial.println(" lux");
-    Serial.println();
 
     if (lux < DARKNESS_THRESHOLD) // check if the light reading is below the threshold
     {
@@ -169,6 +168,6 @@ void monitor_sensors()
     Serial.print(pir_state);
 
     Serial.print(" | Lux: ");
-    Serial.print(lux);
+    Serial.println(lux);
   }
 }
