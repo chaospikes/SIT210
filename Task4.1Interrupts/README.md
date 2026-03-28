@@ -17,10 +17,12 @@ When motion is detected:
 - The PIR interrupt triggers
 - The system checks if it is dark using the BH1750
 - If it is dark (below the darkness threshold) then both lights turn on.
+
 When the button is pressed:
 - The button interrupt triggers
 - Both lights turn on regardless of light level
 - Lights automatically turn off after their time durations
+
 Serial monitor provides:
 - PIR state
 - Lux level
