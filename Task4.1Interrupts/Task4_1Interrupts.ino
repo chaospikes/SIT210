@@ -55,7 +55,7 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(button_pin), buttonISR, CHANGE);
   attachInterrupt(digitalPinToInterrupt(pir_pin), pirISR, RISING);
 
-  Serial.println("Ready to go!"
+  Serial.println("Ready to go!");
 }
 
 void loop()
