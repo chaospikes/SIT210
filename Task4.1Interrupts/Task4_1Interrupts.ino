@@ -11,6 +11,7 @@ void handle_pir_event();
 void turn_on_lights();
 void update_lights();
 void monitor_sensors();
+bool bh1750_connected();
 
 // pin definitions
 const int slider_pin = 2;
@@ -34,7 +35,7 @@ const float DARKNESS_THRESHOLD = 20.0;
 // debounce state tracking
 bool last_slider_state = HIGH;
 unsigned long slider_change_time = 0;
-const unsigned long debounce_delay = 100; // debounce time in ms
+const unsigned long debounce_delay = 100;
 
 // interrupt flags
 volatile bool slider_event = false;
@@ -99,6 +100,12 @@ void pin_setup()
   digitalWrite(hallway_led, LOW);
 }
 
+bool bh1750_connected()
+{
+  Wire.beginTransmission(0x23); // Try to reach the BH1750 on its I2C address
+  return (Wire.endTransmission() == 0); // if status code 0 was returned, the sensor responded
+}
+
 // state-confirmed software debouncing to prevent rapidly repeating interrupt triggers
 bool debounce_slider()
 {
@@ -152,7 +159,7 @@ void handle_pir_event()
     pir_event = false; // update the flag safely
     interrupts(); // resume interrupts
 
-    if (!light_sensor_working) // if the BH1750 is not working
+    if (!bh1750_connected()) // if the BH1750 is not working
     {
       Serial.println("Motion detected, but BH1750 is not working!");
       return;
@@ -221,7 +228,7 @@ void monitor_sensors()
     Serial.print("PIR: ");
     Serial.print(pir_state);
 
-    if (light_sensor_working) // check if the BH1750 has failed
+    if (bh1750_connected()) // check if the BH1750 has failed
     {
       lightMeter.start(); // light sensor begin reading
       float lux = lightMeter.getLux();
