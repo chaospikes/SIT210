@@ -94,6 +94,11 @@ The slider switch produces contact bounce, causing multiple rapid interrupt trig
   * Returns true to indicate a valid slider event
 - If no valid change is detected:
   * Returns false
+ 
+## bh1750_connected()
+
+- Use Wire.beginTransmission to initiate communication with the BH1750 using its I2C address
+- Check if the status code returned is 0, returns true if the device acknowledges (ACK), meaning it is present on the bus
 
 ### handle_slider_event()
 
@@ -110,7 +115,7 @@ The slider switch produces contact bounce, causing multiple rapid interrupt trig
 
 - Checks whether a PIR interrupt event has occurred  
 - Temporarily disables interrupts to safely reset the flag
-- Verifies that the light sensor is available  
+- Verifies that the light sensor is still working  
 - Reads the current lux value from the BH1750  
 - Prints the detected light level to the serial monitor  
 - If the lux value is below the threshold, both lights are turned ON  
