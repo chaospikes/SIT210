@@ -1,103 +1,131 @@
-
-# Task 4.1 – Task 4.1P Handling Interrupts (Porch and Hallway Lights)
+# Task 4.1 – Handling Interrupts (Porch and Hallway Lights)
 
 For this task, I have utilized my Arduino Nano 33 IoT together with the following components:
 
-- A push button acting as a backup manual switch
-- A PIR motion sensor for motion detection
-- An Adafruit BH1750 (I2C) light sensor for ambient light measurement
+- A slider switch acting as a manual override input  
+- A PIR motion sensor for motion detection  
+- An Adafruit BH1750 (I2C) light sensor for ambient light measurement  
 - A blue LED to simulate the porch light (with 82Ω pull-down resistor)
 - An orange LED to simulate the hallway light (with 120Ω pull-down resistor)
 
-The system uses hardware interrupts to detect both button presses and motion events, ensuring immediate response without constant polling.
+The system uses hardware interrupts to detect both slider changes and motion events, allowing responsive behaviour without constant polling.
 
-### Expected system behaviour
+---
 
-When motion is detected:
-- The PIR interrupt triggers
-- The system checks if it is dark using the BH1750
-- If it is dark (below the darkness threshold) then both lights turn on.
+## Expected System Behaviour
 
-When the button is pressed:
-- The button interrupt triggers
-- Both lights turn on regardless of light level
-- Lights automatically turn off after their time durations
+### Motion Detection:
+- PIR interrupt triggers  
+- System reads ambient light level using BH1750  
+- If light level is below threshold then both lights turn ON  
 
-Serial monitor provides:
-- PIR state
-- Lux level
+### Manual Override (Slider switch):
+- Slider interrupt triggers on state change  
+- If switched ON, lights turn ON regardless of light level  
+- If switched OFF, no action (lights continue normal timing behaviour)  
+
+### Light Control:
+- Porch light turns OFF after 30 seconds  
+- Hallway light turns OFF after 60 seconds  
+
+### Serial Monitor Output:
+- PIR state  
+- Lux readings  
 - Event notifications
 
-### setup()
+---
 
-The `setup()` function initializes the system:
+## setup()
 
-- Serial communication is started at 115200 baud for debugging and monitoring
-- The `pin_setup()` function is called to configure I/O pins
+- Initializes serial communication at 115200 baud  
+- Uses a non-blocking timeout for Serial
+- Calls `pin_setup()` to configure I/O
 - The BH1750 light sensor is initialized
-- If initialization fails, an error message is printed and the system halts
-- Button interrupt is attached using CHANGE
-- PIR interrupt is attach using RISING
+- If initialization fails, an error message is printed but system continues running without light sensing  
+- Attaches interrupts:
+  - Slider interrupt attached using `CHANGE`
+  - PIR interrupt attached using `RISING`  
 
-### loop()
+## loop()
 
-The main loop continuously runs four functions:
+The main loop continuously runs four functions, non-blocking:
 
 - `monitor_sensors()` - continuously prints our sensor values to the serial monitor
-- `handle_button_event()` - handles button push interrupts
+- `handle_button_event()` - handles debounced slider interrupts
 - `handle_pir_event()` - handles motion detection interrupts
 - `update_lights()` - handles the lights and timers
 
-### pin_setup()
+## pin_setup()
 
-- Button is set as INPUT_PULLUP so it reads HIGH normally and LOW when pressed
-- PIR sensor is set as INPUT
-- LED's are set as OUTPUT
-- LED's are turned off initially
+- The slider pin is set as `INPUT_PULLUP`, the slider reads `HIGH` normally and `LOW` when switched to the active position  
+- PIR sensor pin set as `INPUT`  
+- LED pins set as `OUTPUT`  
+- LED's are set to `LOW` initially so the lights start in the OFF state  
 
-### monitor_sensors()
+## monitor_sensors()
 
-- Runs every 1 second using millis() timing
-- Reads the PIR state
-- Starts a BH1750 reading and retrieves the lux value
-- Prints PIR state and lux value to the serial monitor
+- Runs every 1 second using `millis()` timing  
+- Reads the current PIR state  
+- Prints the PIR state to the serial monitor  
+- If the light sensor is working, reads and prints the lux value  
+- If the sensor is unavailable, prints that lux is unavailable instead
 
-### sliderISR() and pirISR()
+## sliderISR() and pirISR()
 
 These are our interrupt service routines:
 
-- `sliderISR()` sets button_event = true
+- `sliderISR()` sets slider_event = true
 - `pirISR()` sets pir_event = true
 
 We follow best practice for interrupt handling by doing no heavy processing inside the ISR.
 
-### handle_button_event()
+## debounce_slider()
 
-- Checks if button_event is true
+The slider switch produces contact bounce, causing multiple rapid interrupt triggers. We solved this using state-confirmed software debouncing and separated the logic into a debounce function.
+
+- Checks if slider_event is true (set by the interrupt)
 - Temporarily disables interrupts to safely reset the flag
-- Reads the button state to confirm it is pressed
-- Turns on both lights
-- Prints a notification to the serial monitor
+- Starts a debounce timer using `millis()`
+- Waits until the debounce delay has passed to allow the signal to stabilise
+- Reads the current slider state after the delay
+- Compares the current state with the last confirmed stable state
+- If the state has changed:
+  * Updates the last known state
+  * Returns true to indicate a valid slider event
+- If no valid change is detected:
+  * Returns false
 
-### handle_pir_event()
+### handle_slider_event()
 
-- Checks if pir_event is true
+- Calls `debounce_slider()` to check for a valid, stable slider change
+- If a valid change is detected:
+  * Checks the current slider state
+  * If the slider is ON (LOW):
+    - Turns on both lights
+    - Prints a notification to the serial monitor
+  * If the slider is OFF:
+    - Prints a notification to the serial monitor
+
+## handle_pir_event()
+
+- Checks whether a PIR interrupt event has occurred  
 - Temporarily disables interrupts to safely reset the flag
-- Reads the current lux value from the BH1750
-- Prints the detected light level to the serial monitor
-- Checks if the lux reading is below the threshold:
-  * If it is then turns lights on and prints a notification
-  * If not then the lights stay off and prints a notification 
+- Verifies that the light sensor is available  
+- Reads the current lux value from the BH1750  
+- Prints the detected light level to the serial monitor  
+- If the lux value is below the threshold, both lights are turned ON  
+- Otherwise, the lights remain OFF  
 
-### turn_on_lights()
+## turn_on_lights()
 
 - Turns on both porch and hallway LED's
 - Stores the current time using millis() for each light
 - Sets porch_on and hallway_on flags to true
 
-### update_lights()
+## update_lights()
 
-- Continuously checks elapsed time using millis()
-- Porch light turns OFF after 30 seconds and prints a notification
-- Hallway light turns OFF after 60 seconds and prints a notification
-
+- Uses non-blocking timing with `millis()`  
+- Checks how long each light has been active  
+- Turns the porch light OFF after 30 seconds  
+- Turns the hallway light OFF after 60 seconds  
+- Prints notifications when each light turns OFF  
