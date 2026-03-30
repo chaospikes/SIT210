@@ -2,57 +2,78 @@
 #include <Wire.h>
 #include <hp_BH1750.h>
 
-const int button_pin = 2;
+// function prototypes (ensures correct compilation order)
+void sliderISR();
+void pirISR();
+void pin_setup();
+void handle_slider_event();
+void handle_pir_event();
+void turn_on_lights();
+void update_lights();
+void monitor_sensors();
+
+// pin definitions
+const int slider_pin = 2;
 const int pir_pin = 3;
 const int porch_led = 12;
 const int hallway_led = 10;
 
+// light state tracking
 bool porch_on = false;
 bool hallway_on = false;
+bool light_sensor_working = false;
 
+// light timers
 unsigned long porch_start = 0;
 unsigned long hallway_start = 0;
 
-// light sensor
+// BH1750 light sensor
 hp_BH1750 lightMeter;
-
 const float DARKNESS_THRESHOLD = 20.0;
 
+// debounce state tracking
+bool last_slider_state = HIGH;
+unsigned long slider_change_time = 0;
+const unsigned long debounce_delay = 100; // debounce time in ms
+
 // interrupt flags
-volatile bool button_event = false;
+volatile bool slider_event = false;
 volatile bool pir_event = false;
 
 // interrupt service routines
-void buttonISR()
+void sliderISR()
 {
-  button_event = true;
+  slider_event = true; // flag that slider changed
 }
 
 void pirISR()
 {
-  pir_event = true;
+  pir_event = true; // flag that motion detected
 }
 
 void setup()
 {
   Serial.begin(115200);
-  while (!Serial);
+
+  unsigned long serial_start = millis();
+  while (!Serial && millis() - serial_start < 3000) {} // non-blocking
 
   pin_setup();
 
-  bool init = lightMeter.begin(BH1750_TO_GROUND); // attempt to initialize the BH1750 sensor
+  last_slider_state = digitalRead(slider_pin); // store initial slider state
 
-  if (init) // check the flag if the BH1750 was initialized successfully
+  light_sensor_working = lightMeter.begin(BH1750_TO_GROUND); // attempt to initialize the BH1750 sensor
+
+  if (light_sensor_working)
   {
     Serial.println("BH1750 initialized successfully!");
   }
   else
   {
     Serial.println("Error: BH1750 not detected!");
-    while (true) {}
   }
 
-  attachInterrupt(digitalPinToInterrupt(button_pin), buttonISR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(slider_pin), sliderISR, CHANGE);
   attachInterrupt(digitalPinToInterrupt(pir_pin), pirISR, RISING);
 
   Serial.println("Ready to go!");
@@ -61,15 +82,16 @@ void setup()
 void loop()
 {
   monitor_sensors();
-  handle_button_event();
+  handle_slider_event();
   handle_pir_event();
   update_lights();
 }
 
 void pin_setup()
 {
-  pinMode(button_pin, INPUT_PULLUP);
+  pinMode(slider_pin, INPUT_PULLUP);
   pinMode(pir_pin, INPUT);
+
   pinMode(porch_led, OUTPUT);
   pinMode(hallway_led, OUTPUT);
 
@@ -77,18 +99,47 @@ void pin_setup()
   digitalWrite(hallway_led, LOW);
 }
 
-void handle_button_event()
+// state-confirmed software debouncing to prevent rapidly repeating interrupt triggers
+bool debounce_slider()
 {
-  if (button_event) // check button push event flag
+  static bool debounce_happening = false; // flag to track debouncing
+
+  if (slider_event) // check a slider event has occurred
   {
     noInterrupts(); // pause interrupts
-    button_event = false; // update the flag safely
+    slider_event = false; // update the flag safely
     interrupts(); // resume interrupts
 
-    if (digitalRead(button_pin) == LOW) // check the button was pushed
+    slider_change_time = millis(); // store current time
+    debounce_happening = true; // set debounce flag
+  }
+
+  if (debounce_happening && (millis() - slider_change_time >= debounce_delay)) // check debounce is happening and the delay has passed
+  {
+    int current_state = digitalRead(slider_pin); // read the current slider state (now that it has stabilized)
+    debounce_happening = false; // reset the flag
+
+    if (current_state != last_slider_state) // if the state has changed from last confirmed state
     {
-      Serial.println("Backup button pushed. Lights turned ON");
+      last_slider_state = current_state; // update the stored stable state
+      return true; // return true to indicate a valid state change
+    }
+  }
+  return false; // return false if no valid change was detected
+}
+
+void handle_slider_event()
+{
+  if (debounce_slider()) // check the debounce function returned true
+  {
+    if (last_slider_state == LOW) // if the slider was switched to active
+    {
+      Serial.println("Slider switched ON. Lights turned ON!");
       turn_on_lights(); // turn on the lights
+    }
+    else
+    {
+      Serial.println("Slider switched OFF!");
     }
   }
 }
@@ -100,6 +151,12 @@ void handle_pir_event()
     noInterrupts(); // pause interrupts
     pir_event = false; // update the flag safely
     interrupts(); // resume interrupts
+
+    if (!light_sensor_working) // if the BH1750 is not working
+    {
+      Serial.println("Motion detected, but BH1750 is not working!");
+      return;
+    }
 
     lightMeter.start(); // light sensor begin reading
     float lux = lightMeter.getLux();
@@ -161,13 +218,20 @@ void monitor_sensors()
 
     int pir_state = digitalRead(pir_pin); // PIR polling
 
-    lightMeter.start(); // light sensor begin reading
-    float lux = lightMeter.getLux();
-
     Serial.print("PIR: ");
     Serial.print(pir_state);
 
-    Serial.print(" | Lux: ");
-    Serial.println(lux);
+    if (light_sensor_working) // check if the BH1750 has failed
+    {
+      lightMeter.start(); // light sensor begin reading
+      float lux = lightMeter.getLux();
+
+      Serial.print(" | Lux: ");
+      Serial.println(lux);
+    }
+    else
+    {
+      Serial.println(" | Lux: n/a");
+    }
   }
 }
