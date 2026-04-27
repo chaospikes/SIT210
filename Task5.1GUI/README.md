@@ -10,7 +10,7 @@ For this task, I have utilised my Raspberry Pi 4B running Python together with t
 
 The system uses a desktop GUI with checkboxes to allow the user to control which room lights should be turned on. Unlike the previous radio button version, the checkbox version allows multiple lights to be turned on at the same time.
 
----
+--
 
 ## Expected System Behaviour
 
@@ -42,7 +42,7 @@ The system uses a desktop GUI with checkboxes to allow the user to control which
   - All checkboxes are unchecked
   - The application window closes
 
----
+--
 
 ## GPIO Pin Setup
 
@@ -58,7 +58,7 @@ Each GPIO pin is controlled using a `gpiozero.LED` object:
 - `bath_led = LED(27)`
 - `closet_led = LED(22)`
 
----
+--
 
 ## Class: `ControlLights(QMainWindow)`
 
@@ -72,7 +72,7 @@ This class defines the main GUI window and contains the logic for the light cont
 - Calls `initUI()` to build the interface
 - Calls `connectSignals()` to connect user actions to program functions
 
----
+--
 
 ## `initUI()`
 
@@ -90,7 +90,7 @@ This function builds the graphical user interface.
 - Adds all widgets to the layout
 - Sets the completed layout as the central widget of the main window
 
----
+--
 
 ## `connectSignals()`
 
@@ -102,7 +102,7 @@ This function connects GUI events to their corresponding program actions.
 
 This allows the program to respond immediately whenever the user selects or unselects a room, turns all lights off, or closes the application.
 
----
+--
 
 ## `updateLights()`
 
@@ -119,7 +119,7 @@ This function controls the LEDs based on which checkboxes are currently selected
 
 This allows each light to be controlled independently.
 
----
+--
 
 ## `allOff()`
 
@@ -135,7 +135,7 @@ This function turns off all lights and resets the GUI checkbox states.
 
 This is used when the user presses the **All Off** button, and it is also reused by `closeApp()` before closing the application.
 
----
+--
 
 ## `closeApp()`
 
@@ -147,7 +147,7 @@ This function is called when the user presses the **Close** button.
 
 This avoids repeating the same LED shutdown code and ensures the system shuts down cleanly.
 
----
+--
 
 ## `main()`
 
