@@ -23,59 +23,86 @@ class ControlLights(QMainWindow):
         # Create main container and layout
         central_widget = QWidget()
         layout = QVBoxLayout()
+
         # Title label
         label = QtWidgets.QLabel("Linda's House")
-        # Radio buttons for selecting which light to turn on
-        self.living_radio = QtWidgets.QRadioButton("Living Room")
-        self.bath_radio = QtWidgets.QRadioButton("Bathroom")
-        self.closet_radio = QtWidgets.QRadioButton("Closet")
+
+        # Check boxes for controlling each light
+        self.living_check = QtWidgets.QCheckBox("Living Room")
+        self.bath_check = QtWidgets.QCheckBox("Bathroom")
+        self.closet_check = QtWidgets.QCheckBox("Closet")
+
+        # Button to turn all lights off
+        self.all_off_button = QtWidgets.QPushButton("All Off")
+
         # Button to close application
         self.exit_button = QtWidgets.QPushButton("Close")
+
         # Add widgets to layout
         layout.addWidget(label)
-        layout.addWidget(self.living_radio)
-        layout.addWidget(self.bath_radio)
-        layout.addWidget(self.closet_radio)
+        layout.addWidget(self.living_check)
+        layout.addWidget(self.bath_check)
+        layout.addWidget(self.closet_check)
+        layout.addWidget(self.all_off_button)
         layout.addWidget(self.exit_button)
+
         # Apply layout to window
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
     def connectSignals(self):
-        # Connect radio button changes to light update function
-        self.living_radio.toggled.connect(self.updateLights)
-        self.bath_radio.toggled.connect(self.updateLights)
-        self.closet_radio.toggled.connect(self.updateLights)
+        # Connect check box changes to light update function
+        self.living_check.toggled.connect(self.updateLights)
+        self.bath_check.toggled.connect(self.updateLights)
+        self.closet_check.toggled.connect(self.updateLights)
+
+        # Connect all off button
+        self.all_off_button.clicked.connect(self.allOff)
+
         # Connect close button to exit function
         self.exit_button.clicked.connect(self.closeApp)
 
     def updateLights(self):
-        # Turn all lights off first
+        # Control each light based on its checkbox
+        if self.living_check.isChecked():
+            living_led.on()
+        else:
+            living_led.off()
+
+        if self.bath_check.isChecked():
+            bath_led.on()
+        else:
+            bath_led.off()
+
+        if self.closet_check.isChecked():
+            closet_led.on()
+        else:
+            closet_led.off()
+
+    def allOff(self):
+        # Turn all lights off
         living_led.off()
         bath_led.off()
         closet_led.off()
-        # Turn on the selected light
-        if self.living_radio.isChecked():
-            living_led.on()
-        elif self.bath_radio.isChecked():
-            bath_led.on()
-        elif self.closet_radio.isChecked():
-            closet_led.on()
+
+        # Uncheck all checkboxes
+        self.living_check.setChecked(False)
+        self.bath_check.setChecked(False)
+        self.closet_check.setChecked(False)
 
     def closeApp(self):
         # Ensure all lights are off before closing
-        living_led.off()
-        bath_led.off()
-        closet_led.off()
+        self.allOff()
         self.close()
-
 
 def main():
     # Create application instance
     app = QApplication(sys.argv)
+
     # Create and show main window
     win = ControlLights()
     win.show()
+
     # Start event loop
     sys.exit(app.exec_())
 
