@@ -148,11 +148,7 @@ A double button press opens refill mode. The lid opens so tablets can be added. 
 
 ## Demonstration video Link
 
-
-
-## Artefact report
-
-
+https://deakin.au.panopto.com/Panopto/Pages/Viewer.aspx?id=35aedf17-1603-45da-b348-b45800e7dfb8
 
 ## Limitations and future improvements
 
