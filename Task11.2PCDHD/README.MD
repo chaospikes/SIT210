@@ -79,7 +79,7 @@ The IFTTT payload includes:
 
 ## Code explanation
 
-A full explanation of the program is included in the included code_breakdown txt file
+A full explanation of the program is included in the included code_breakdown.txt file
 
 ## Program structure
 
